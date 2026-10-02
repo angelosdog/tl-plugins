@@ -1284,14 +1284,8 @@ export const sendCurrentTrack = async (spec: StreamSpec | undefined, meta: Track
 				: isLoopbackHost(control.host)
 					? "127.0.0.1"
 					: getLanAddress();
-		const useDirectUrl = spec.directUrl !== undefined && spec.directUrl !== "";
-		let url: string;
-		if (useDirectUrl) {
-			url = spec.directUrl;
-			console.log(`[HQPlayer.sendCurrentTrack] Attempting direct TIDAL URL first...`);
-		} else {
-			url = await streamServer.play(spec, host);
-		}
+		// Direct TIDAL URL doesn't work (HQPlayer can't reach CDN or token issues) - use proxy
+		const url = await streamServer.play(spec, host);
 
 		const metaAttrs = formatAttrs({
 			song: meta?.song,
@@ -1303,25 +1297,11 @@ export const sendCurrentTrack = async (spec: StreamSpec | undefined, meta: Track
 			track_id: meta?.track_id ?? spec.trackId,
 			mime: meta?.mime ?? spec.mime ?? "audio/flac",
 			length: String(spec.duration),
-			cover: meta?.cover,
 		});
 		await control.playlistClear();
 		await control.playlistAdd(url, metaAttrs);
+		await new Promise((r) => setTimeout(r, 1000));
 		await control.play();
-		// Wait a moment and verify it's actually playing
-		if (useDirectUrl) {
-			await new Promise((r) => setTimeout(r, 1500));
-			const status = await control.getStatus();
-			console.log(`[HQPlayer.sendCurrentTrack] Status after play: state=${status.state}, position=${status.position}`);
-			if (status.state !== 2) {
-				console.log(`[HQPlayer.sendCurrentTrack] Direct URL not actually playing (state=${status.state}), falling back to proxy...`);
-				const proxyUrl = await streamServer.play(spec, host);
-				await control.playlistClear();
-				await control.playlistAdd(proxyUrl, metaAttrs);
-				await control.play();
-				return { ok: true, url: proxyUrl };
-			}
-		}
 		return { ok: true, url };
 	} catch (err) {
 		const message = String((err as Error)?.message ?? err);

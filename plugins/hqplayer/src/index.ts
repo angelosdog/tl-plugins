@@ -77,28 +77,7 @@ const toTrackMeta = async (item: MediaItem): Promise<TrackMeta> => {
 	const tidalItem = item.tidalItem;
 	trace.log("tidalItem keys:", Object.keys(tidalItem).join(", "));
 	trace.log("album keys:", tidalItem.album ? Object.keys(tidalItem.album).join(", ") : "no album");
-	// Try multiple field names for cover
-	let coverId = "";
-	const candidates = [
-		(tidalItem as unknown as { coverUrl?: string })?.coverUrl,
-		(tidalItem as unknown as { cover?: string })?.cover,
-		(tidalItem.album as unknown as { coverUrl?: string })?.coverUrl,
-		(tidalItem.album as unknown as { cover?: string })?.cover,
-		(tidalItem.album as unknown as { coverImageUrl?: string })?.coverImageUrl,
-		(tidalItem.album as unknown as { imageUrl?: string })?.imageUrl,
-		(tidalItem as unknown as { album?: { coverUrl?: string } })?.album?.coverUrl,
-		(tidalItem as unknown as { album?: { cover?: string } })?.album?.cover,
-	];
-	for (const c of candidates) {
-		if (c) {
-			coverId = c;
-			break;
-		}
-	}
-	// Convert TIDAL cover UUID to URL (TIDAL uses UUID, need to format as URL)
-	const coverUrl = coverId 
-		? `https://resources.tidal.com/images/${coverId}/resize/600x600/jpeg`
-		: "";
+	// Cover not sent to HQPlayer
 	trace.log("Cover candidates:", JSON.stringify(candidates));
 	trace.log("Cover URL:", coverUrl);
 	return {
@@ -136,10 +115,6 @@ export const sendCurrentTrack = async (item: MediaItem): Promise<boolean> => {
 	}
 	const manifestKeys = playback.manifest ? Object.keys(playback.manifest) : [];
 	trace.log("TIDAL manifest keys:", manifestKeys.join(", "));
-	const directUrl = playback.manifest.urls && playback.manifest.urls.length > 0
-		? String(playback.manifest.urls[0])
-		: undefined;
-	trace.log("Direct URL available:", !!directUrl);
 	if (playback.manifestMimeType !== "application/vnd.tidal.bts") {
 		trace.warn("DASH stream not supported, skipping (spatial audio?).");
 		sendingTrack = false;
@@ -152,7 +127,6 @@ export const sendCurrentTrack = async (item: MediaItem): Promise<boolean> => {
 		mime: playback.manifest.mimeType || "audio/flac",
 		manifestMimeType: "application/vnd.tidal.bts",
 		manifest: playback.manifest,
-		directUrl: directUrl,
 	};
 
 	const result = await hqp.sendCurrentTrack(spec, await toTrackMeta(item));
