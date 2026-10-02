@@ -165,20 +165,6 @@ export const Settings = () => {
 				>
 					Native
 				</LunaButtonSetting>
-				<LunaButtonSetting
-					title="Discover (UPnP)"
-					desc="Send SSDP multicast and list UPnP MediaRenderers"
-					onClick={() => void hqp.discoverHQPlayersUpnp(4000).then(setHosts)}
-				>
-					UPnP
-				</LunaButtonSetting>
-				<LunaButtonSetting
-					title="Discover BubbleUPnP"
-					desc="Send SSDP and list BubbleUPnP/OpenHome renderers"
-					onClick={() => void hqp.discoverBubbleUpnp(4000).then(setHosts)}
-				>
-					BubbleUPnP
-				</LunaButtonSetting>
 				{hosts.length > 0 && (
 					<List dense disablePadding>
 						{hosts.map((h) => (

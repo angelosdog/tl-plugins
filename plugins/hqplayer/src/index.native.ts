@@ -1208,39 +1208,8 @@ const discoverOnce = async (timeoutMs: number): Promise<HQDiscoveredHost[]> => {
 /** Discover HQPlayer instances on the local network via the discovery multicast. */
 export const discoverHQPlayers = (timeoutMs = 4000): Promise<HQDiscoveredHost[]> => discoverOnce(timeoutMs);
 
-/** Discover HQPlayer instances via UPnP/SSDP. */
-export const discoverHQPlayersUpnp = async (timeoutMs = 4000): Promise<HQDiscoveredHost[]> => {
-	const devices = await ssdpDiscover(UPNP_DEVICE_TYPE_MEDIA_RENDERER, timeoutMs);
-	const hosts: HQDiscoveredHost[] = [];
-	for (const device of devices) {
-		if (device.friendlyName?.toLowerCase().includes("hqplayer") || device.friendlyName?.toLowerCase().includes("signalyst")) {
-			hosts.push({
-				address: device.host,
-				name: device.friendlyName,
-				version: "",
-				port: device.port,
-			});
-		}
-	}
-	return hosts;
-};
 
-/** Discover BubbleUPnP/OpenHome renderers via UPnP/SSDP. */
-export const discoverBubbleUpnp = async (timeoutMs = 4000): Promise<HQDiscoveredHost[]> => {
-	const devices = await ssdpDiscover(UPNP_DEVICE_TYPE_MEDIA_RENDERER, timeoutMs);
-	const hosts: HQDiscoveredHost[] = [];
-	for (const device of devices) {
-		if (device.friendlyName?.toLowerCase().includes("openhome") || device.friendlyName?.toLowerCase().includes("bubbleupnp")) {
-			hosts.push({
-				address: device.host,
-				name: device.friendlyName,
-				version: "",
-				port: device.port,
-			});
-		}
-	}
-	return hosts;
-};
+
 // #endregion
 
 // #region Module state
