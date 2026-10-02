@@ -109,7 +109,9 @@ export const sendCurrentTrack = async (item: MediaItem): Promise<boolean> => {
 	}
 	const manifestKeys = playback.manifest ? Object.keys(playback.manifest) : [];
 	trace.log("TIDAL manifest keys:", manifestKeys.join(", "));
-	trace.log("Full playback info:", JSON.stringify(playback, null, 2));
+	if (playback.manifest.urls) {
+		trace.log("TIDAL manifest URLs:", JSON.stringify(playback.manifest.urls, null, 2));
+	}
 	if (playback.manifestMimeType !== "application/vnd.tidal.bts") {
 		trace.warn("DASH stream not supported, skipping (spatial audio?).");
 		sendingTrack = false;
