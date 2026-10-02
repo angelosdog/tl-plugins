@@ -1287,6 +1287,11 @@ export const sendCurrentTrack = async (spec: StreamSpec | undefined, meta: Track
 		const isDirect = !!spec.directUrl;
 		const url = spec.directUrl ?? (await streamServer.play(spec, host));
 		console.log(`[HQPlayer] URL type: ${isDirect ? "DIRECT" : "PROXY"}, URL: ${url.substring(0, 120)}`);
+		if (!isDirect) {
+			console.log(`[HQPlayer] Using PROXY - stream server URL`);
+		} else {
+			console.log(`[HQPlayer] Using DIRECT - TIDAL CDN URL with token`);
+		}
 
 		const metaAttrs = formatAttrs({
 			song: meta?.song,
@@ -1299,10 +1304,22 @@ export const sendCurrentTrack = async (spec: StreamSpec | undefined, meta: Track
 			mime: meta?.mime ?? spec.mime ?? "audio/flac",
 			length: String(spec.duration),
 		});
-		await control.playlistClear();
-		await control.playlistAdd(url, metaAttrs);
+		try {
+			await control.playlistClear();
+			await control.playlistAdd(url, metaAttrs);
+			console.log(`[HQPlayer] PlaylistAdd completed, URL: ${url.substring(0, 80)}...`);
+		} catch (err) {
+			console.error(`[HQPlayer] PlaylistAdd failed:`, err);
+			throw err;
+		}
 		await new Promise((r) => setTimeout(r, 1000));
-		await control.play();
+		try {
+			await control.play();
+			console.log(`[HQPlayer] Play command sent`);
+		} catch (err) {
+			console.error(`[HQPlayer] Play failed:`, err);
+			throw err;
+		}
 		return { ok: true, url };
 	} catch (err) {
 		const message = String((err as Error)?.message ?? err);
