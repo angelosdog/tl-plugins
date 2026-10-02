@@ -6,6 +6,9 @@ on:
       - main
     paths-ignore:
       - "**/*.md"
+  # Let the release be run on demand. Unlike `push`, this ignores
+  # paths-ignore, so it works even when nothing but docs have changed.
+  workflow_dispatch:
 
 # Every push targets the same rolling `latest` tag, so never let two
 # releases race to write it.
