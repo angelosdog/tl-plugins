@@ -1286,7 +1286,6 @@ export const sendCurrentTrack = async (spec: StreamSpec | undefined, meta: Track
 					: getLanAddress();
 		const isDirect = false; // DIRECT fails due to token expiry - always use PROXY
 		const url = await streamServer.play(spec, host);
-		console.log(`[HQPlayer] Using PROXY URL: ${url.substring(0, 120)}`);
 
 		const metaAttrs = formatAttrs({
 			song: meta?.song,
@@ -1302,19 +1301,12 @@ export const sendCurrentTrack = async (spec: StreamSpec | undefined, meta: Track
 		try {
 			await control.playlistClear();
 			await control.playlistAdd(url, metaAttrs, 0);
-			console.log(`[HQPlayer] PlaylistAdd completed, waiting for buffer...`);
 		} catch (err) {
 			console.error(`[HQPlayer] PlaylistAdd failed:`, err);
 			throw err;
 		}
-		await new Promise((r) => setTimeout(r, 4000)); // Wait for buffer to fill before play
-		try {
-			await control.play();
-			console.log(`[HQPlayer] Play command sent`);
-		} catch (err) {
-			console.error(`[HQPlayer] Play failed:`, err);
-			throw err;
-		}
+		await new Promise((r) => setTimeout(r, 4000));
+		await control.play();
 		return { ok: true, url };
 	} catch (err) {
 		const message = String((err as Error)?.message ?? err);
