@@ -1284,7 +1284,9 @@ export const sendCurrentTrack = async (spec: StreamSpec | undefined, meta: Track
 				: isLoopbackHost(control.host)
 					? "127.0.0.1"
 					: getLanAddress();
-		const url = await streamServer.play(spec, host);
+		const useDirectUrl = spec.directUrl !== undefined && spec.directUrl !== "";
+		const url = useDirectUrl ? spec.directUrl : await streamServer.play(spec, host);
+		console.log(`[HQPlayer.sendCurrentTrack] Using ${useDirectUrl ? "direct TIDAL URL" : "proxy URL"}: ${url.substring(0, 80)}...`);
 
 		const metaAttrs = formatAttrs({
 			song: meta?.song,
