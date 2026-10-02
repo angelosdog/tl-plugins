@@ -75,8 +75,12 @@ ipcRenderer.on(unloads, HQPlayerEventChannel, (_event: unknown, data: HQPlayerEv
 // Best-effort <metadata> child for PlayNextURI (guarded accessors).
 const toTrackMeta = async (item: MediaItem): Promise<TrackMeta> => {
 	const tidalItem = item.tidalItem;
+	trace.log("tidalItem keys:", Object.keys(tidalItem).join(", "));
+	trace.log("album keys:", tidalItem.album ? Object.keys(tidalItem.album).join(", ") : "no album");
 	const coverUrl = (tidalItem as unknown as { coverUrl?: string })?.coverUrl 
 		?? (tidalItem.album as unknown as { coverUrl?: string })?.coverUrl
+		?? (tidalItem.album as unknown as { cover?: string })?.cover
+		?? (tidalItem as unknown as { cover?: string })?.cover
 		?? "";
 	trace.log("Cover URL:", coverUrl);
 	return {
