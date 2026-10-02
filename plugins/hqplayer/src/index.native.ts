@@ -1301,13 +1301,13 @@ export const sendCurrentTrack = async (spec: StreamSpec | undefined, meta: Track
 		});
 		try {
 			await control.playlistClear();
-			await control.playlistAdd(url, metaAttrs, 0); // freewheel=0: let HQPlayer pace the fetch
-			console.log(`[HQPlayer] PlaylistAdd completed, URL: ${url.substring(0, 80)}...`);
+			await control.playlistAdd(url, metaAttrs, 0);
+			console.log(`[HQPlayer] PlaylistAdd completed, waiting for buffer...`);
 		} catch (err) {
 			console.error(`[HQPlayer] PlaylistAdd failed:`, err);
 			throw err;
 		}
-		await new Promise((r) => setTimeout(r, 1000));
+		await new Promise((r) => setTimeout(r, 4000)); // Wait for buffer to fill before play
 		try {
 			await control.play();
 			console.log(`[HQPlayer] Play command sent`);
