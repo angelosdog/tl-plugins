@@ -78,6 +78,7 @@ const toTrackMeta = async (item: MediaItem): Promise<TrackMeta> => {
 	const coverUrl = (tidalItem as unknown as { coverUrl?: string })?.coverUrl 
 		?? (tidalItem.album as unknown as { coverUrl?: string })?.coverUrl
 		?? "";
+	trace.log("Cover URL:", coverUrl);
 	return {
 		song: await item.title().catch(() => tidalItem.title ?? ""),
 		artist: tidalItem.artists?.map((a) => a.name).join(", ") ?? "",
