@@ -75,11 +75,6 @@ ipcRenderer.on(unloads, HQPlayerEventChannel, (_event: unknown, data: HQPlayerEv
 // Best-effort <metadata> child for PlayNextURI (guarded accessors).
 const toTrackMeta = async (item: MediaItem): Promise<TrackMeta> => {
 	const tidalItem = item.tidalItem;
-	trace.log("tidalItem keys:", Object.keys(tidalItem).join(", "));
-	trace.log("album keys:", tidalItem.album ? Object.keys(tidalItem.album).join(", ") : "no album");
-	// Cover not sent to HQPlayer
-	trace.log("Cover candidates:", JSON.stringify(candidates));
-	trace.log("Cover URL:", coverUrl);
 	return {
 		song: await item.title().catch(() => tidalItem.title ?? ""),
 		artist: tidalItem.artists?.map((a) => a.name).join(", ") ?? "",
@@ -89,7 +84,6 @@ const toTrackMeta = async (item: MediaItem): Promise<TrackMeta> => {
 		date: tidalItem.releaseDate ?? "",
 		track_id: String(item.id),
 		mime: "audio/flac",
-		cover: coverUrl,
 	};
 };
 
@@ -115,6 +109,7 @@ export const sendCurrentTrack = async (item: MediaItem): Promise<boolean> => {
 	}
 	const manifestKeys = playback.manifest ? Object.keys(playback.manifest) : [];
 	trace.log("TIDAL manifest keys:", manifestKeys.join(", "));
+	trace.log("Full playback info:", JSON.stringify(playback, null, 2));
 	if (playback.manifestMimeType !== "application/vnd.tidal.bts") {
 		trace.warn("DASH stream not supported, skipping (spatial audio?).");
 		sendingTrack = false;
