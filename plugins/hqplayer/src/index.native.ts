@@ -969,7 +969,7 @@ class HQPlayerControl {
 		if (!this.isConnected) await this.connect(this.host || "192.168.20.12", this.port || 4321);
 		const metaChild = metadata ? `<metadata ${metadata}/>` : "";
 		const payload = `<?xml version="1.0"?><PlaylistAdd uri="${escapeAttr(uri)}" queued="0" clear="0" start="0" freewheel="1">${metaChild}</PlaylistAdd>`;
-		await this.commandRaw("PlaylistAdd", payload);
+		await this.commandRaw("PlaylistAdd", payload, 30000);
 	}
 
 	// #endregion
