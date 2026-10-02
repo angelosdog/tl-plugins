@@ -1,0 +1,31 @@
+name: "Validate & Build"
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  Build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install pnpm
+        uses: pnpm/action-setup@v6
+      - name: Install Node.js
+        uses: actions/setup-node@v7
+        with:
+          cache: pnpm
+          node-version: latest
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build
+        run: pnpm run build
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: luna-artifacts
+          path: ./dist
+          if-no-files-found: error

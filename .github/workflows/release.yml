@@ -1,0 +1,53 @@
+name: "[main] Release"
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - "**/*.md"
+
+# Every push targets the same rolling `latest` tag, so never let two
+# releases race to write it.
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  Build:
+    uses: ./.github/workflows/build.yml
+
+  Release:
+    name: Release latest on GitHub
+    needs: Build
+    runs-on: ubuntu-latest
+    permissions:
+      # Required to create the release and upload assets as the default
+      # GITHUB_TOKEN is read-only by default.
+      contents: write
+    steps:
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v8
+        with:
+          name: luna-artifacts
+          path: ./dist/
+      - name: Publish latest release on GitHub
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # This job has no actions/checkout step, so there is no git repo for
+          # gh to infer the target from. Point it at the repo explicitly.
+          GH_REPO: ${{ github.repository }}
+        run: |
+          notes="Automated build of ${{ github.sha }}."
+          # `latest` is a rolling tag: create it the first time, then replace
+          # the assets on every later build.
+          if gh release view latest >/dev/null 2>&1; then
+            gh release upload latest ./dist/* --clobber
+            gh release edit latest --notes "$notes"
+          else
+            gh release create latest \
+              --title "Latest Release" \
+              --notes "$notes" \
+              --target "${{ github.sha }}" \
+              ./dist/*
+          fi

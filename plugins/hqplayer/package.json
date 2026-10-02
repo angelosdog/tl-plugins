@@ -1,0 +1,14 @@
+{
+	"name": "@angelosdog/hqplayer",
+	"description": "Streams TIDAL playback to an HQPlayer instance over its XML network control protocol. Requires a HiFi (FLAC) TIDAL account.",
+	"author": {
+		"name": "HQPlayer Plugin"
+	},
+	"main": "./src/index.ts",
+	"type": "module",
+	"dependencies": {
+		"@emotion/react": "^11.13.5",
+		"@emotion/styled": "^11.13.5",
+		"@mui/material": "^9.3.1"
+	}
+}

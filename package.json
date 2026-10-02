@@ -1,0 +1,22 @@
+{
+	"name": "@angelosdog/TidaLuna-Plugins",
+	"description": "A collection of plugins for TidaLuna",
+	"type": "module",
+	"packageManager": "pnpm@11.1.2",
+	"scripts": {
+		"build": "rimraf ./dist && tsx esbuild.config.ts",
+		"watch": "concurrently \"pnpm:build --watch\" pnpm:serve",
+		"serve": "http-server ./dist -p 3000 -s --cors -c-1"
+	},
+	"devDependencies": {
+		"@types/node": "^26.2.0",
+		"@types/react": "^19.2.18",
+		"@types/react-dom": "^19.2.4",
+		"concurrently": "^9.1.2",
+		"http-server": "^14.1.1",
+		"luna": "github:Inrixia/TidaLuna",
+		"rimraf": "^6.1.3",
+		"tsx": "^4.23.12",
+		"typescript": "^7.0.2"
+	}
+}
