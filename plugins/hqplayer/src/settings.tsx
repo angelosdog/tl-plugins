@@ -140,7 +140,7 @@ export const Settings = () => {
 					value={streamHost}
 					onChange={(e) => setStreamHost(set("streamHost", e.target.value))}
 				/>
-				<LunaSetting title="Control: Native TCP (port 4321)" desc="No UPnP fallback - matches LMS-HQPlayer-Bridge" />
+				<LunaSetting title="Control: Native TCP (port 4321)" desc="Uses HQPlayer's native TCP control API" />
 				<LunaButtonSetting
 					title="Reconnect"
 					desc="Force a reconnect to the control interface"
