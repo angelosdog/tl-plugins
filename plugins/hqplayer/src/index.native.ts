@@ -1285,8 +1285,13 @@ export const sendCurrentTrack = async (spec: StreamSpec | undefined, meta: Track
 					? "127.0.0.1"
 					: getLanAddress();
 		const useDirectUrl = spec.directUrl !== undefined && spec.directUrl !== "";
-		const url = useDirectUrl ? spec.directUrl : await streamServer.play(spec, host);
-		console.log(`[HQPlayer.sendCurrentTrack] Using ${useDirectUrl ? "direct TIDAL URL" : "proxy URL"}: ${url.substring(0, 80)}...`);
+		let url: string;
+		if (useDirectUrl) {
+			url = spec.directUrl;
+			console.log(`[HQPlayer.sendCurrentTrack] Attempting direct TIDAL URL first...`);
+		} else {
+			url = await streamServer.play(spec, host);
+		}
 
 		const metaAttrs = formatAttrs({
 			song: meta?.song,
@@ -1302,9 +1307,20 @@ export const sendCurrentTrack = async (spec: StreamSpec | undefined, meta: Track
 		});
 		await control.playlistClear();
 		await control.playlistAdd(url, metaAttrs);
-		await new Promise((r) => setTimeout(r, 2000));
-		await control.play();
-		return { ok: true, url };
+		try {
+			await control.play();
+			return { ok: true, url };
+		} catch (playErr) {
+			if (useDirectUrl) {
+				console.log(`[HQPlayer.sendCurrentTrack] Direct URL failed, falling back to proxy...`);
+				const proxyUrl = await streamServer.play(spec, host);
+				await control.playlistClear();
+				await control.playlistAdd(proxyUrl, metaAttrs);
+				await control.play();
+				return { ok: true, url: proxyUrl };
+			}
+			throw playErr;
+		}
 	} catch (err) {
 		const message = String((err as Error)?.message ?? err);
 		console.error(`[HQPlayer.sendCurrentTrack]`, err);
