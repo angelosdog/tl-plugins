@@ -965,11 +965,11 @@ class HQPlayerControl {
 		await this.commandEvent("PlaylistClear");
 	}
 
-	public async playlistAdd(uri: string, metadata: string): Promise<void> {
+public async playlistAdd(uri: string, metadata: string, freewheel = 1): Promise<void> {
 		if (!this.isConnected) await this.connect(this.host || "192.168.20.12", this.port || 4321);
 		const metaChild = metadata ? `<metadata ${metadata}/>` : "";
-		const payload = `<?xml version="1.0"?><PlaylistAdd uri="${escapeAttr(uri)}" queued="0" clear="0" start="0" freewheel="1">${metaChild}</PlaylistAdd>`;
-		await this.commandRaw("PlaylistAdd", payload, 30000);
+		const payload = `<?xml version="1.0"?><PlaylistAdd uri="${escapeAttr(uri)}" queued="0" clear="0" start="0" freewheel="${freewheel}">${metaChild}</PlaylistAdd>`;
+		await this.commandRaw("PlaylistAdd", payload);
 	}
 
 	// #endregion
@@ -1284,14 +1284,9 @@ export const sendCurrentTrack = async (spec: StreamSpec | undefined, meta: Track
 				: isLoopbackHost(control.host)
 					? "127.0.0.1"
 					: getLanAddress();
-		const isDirect = !!spec.directUrl;
-		const url = spec.directUrl ?? (await streamServer.play(spec, host));
-		console.log(`[HQPlayer] URL type: ${isDirect ? "DIRECT" : "PROXY"}, URL: ${url.substring(0, 120)}`);
-		if (!isDirect) {
-			console.log(`[HQPlayer] Using PROXY - stream server URL`);
-		} else {
-			console.log(`[HQPlayer] Using DIRECT - TIDAL CDN URL with token`);
-		}
+		const isDirect = false; // DIRECT fails due to token expiry - always use PROXY
+		const url = await streamServer.play(spec, host);
+		console.log(`[HQPlayer] Using PROXY URL: ${url.substring(0, 120)}`);
 
 		const metaAttrs = formatAttrs({
 			song: meta?.song,
@@ -1306,7 +1301,7 @@ export const sendCurrentTrack = async (spec: StreamSpec | undefined, meta: Track
 		});
 		try {
 			await control.playlistClear();
-			await control.playlistAdd(url, metaAttrs);
+			await control.playlistAdd(url, metaAttrs, 0); // freewheel=0: let HQPlayer pace the fetch
 			console.log(`[HQPlayer] PlaylistAdd completed, URL: ${url.substring(0, 80)}...`);
 		} catch (err) {
 			console.error(`[HQPlayer] PlaylistAdd failed:`, err);
