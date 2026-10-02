@@ -13,6 +13,7 @@ export const unloads = new Set<LunaUnload>();
 
 let connected = false;
 let connecting = false;
+let sendingTrack = false;
 // Normalized by the native side (min <= 0, max >= 1) before it reaches us.
 let hqVolumeRange = { min: -60, max: 0 };
 let lastVolume: number | undefined;
@@ -100,15 +101,23 @@ export const sendCurrentTrack = async (item: MediaItem): Promise<boolean> => {
 	trace.log("ensureConnected result:", connected);
 	if (!connected) return false;
 
+	sendingTrack = true;
+	setTimeout(() => (sendingTrack = false), 5000);
+
 	const quality = settings.quality as AudioQuality;
 	const playback = await item.playbackInfo(quality);
 	if (playback === undefined) {
 		trace.warn("No playback info for this track, skipping.");
+		sendingTrack = false;
 		return false;
 	}
-	trace.log("TIDAL manifest:", JSON.stringify(playback.manifest, null, 2));
+	const manifestKeys = playback.manifest ? Object.keys(playback.manifest) : [];
+	trace.log("TIDAL manifest keys:", manifestKeys.join(", "));
+	if (playback.manifest.url) trace.log("TIDAL has direct URL:", playback.manifest.url.substring(0, 100) + "...");
+	if (playback.manifest.urls) trace.log("TIDAL has urls array, length:", playback.manifest.urls?.length);
 	if (playback.manifestMimeType !== "application/vnd.tidal.bts") {
 		trace.warn("DASH stream not supported, skipping (spatial audio?).");
+		sendingTrack = false;
 		return false;
 	}
 
@@ -123,8 +132,10 @@ export const sendCurrentTrack = async (item: MediaItem): Promise<boolean> => {
 	const result = await hqp.sendCurrentTrack(spec, await toTrackMeta(item));
 	if (!result.ok) {
 		trace.msg.err(`Failed to send track: ${result.error}`);
+		sendingTrack = false;
 		return false;
 	}
+	sendingTrack = false;
 	if (settings.syncVolume) setSyncVolume(redux.store.getState().playbackControls.volume);
 	trace.log(`Sent track ${spec.trackId} -> ${result.url}`);
 	return true;
@@ -148,6 +159,8 @@ MediaItem.onMediaTransition(unloads, (item) => void sendCurrentTrack(item));
 // Mirror TIDAL transport to HQPlayer while the plugin is enabled.
 PlayState.onState(unloads, (state) => {
 	if (!settings.enabled) return;
+	// Skip if we're currently sending a track (we handle play ourselves)
+	if (sendingTrack) return;
 	switch (state) {
 		case "PLAYING": {
 			void hqp.playHQPlayer();

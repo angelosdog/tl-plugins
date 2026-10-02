@@ -1301,6 +1301,7 @@ export const sendCurrentTrack = async (spec: StreamSpec | undefined, meta: Track
 		await control.stop();
 		await control.playlistClear();
 		await control.playlistAdd(url, metaAttrs);
+		await new Promise((r) => setTimeout(r, 2000));
 		await control.play();
 		return { ok: true, url };
 	} catch (err) {
