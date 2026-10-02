@@ -1315,14 +1315,6 @@ export const sendCurrentTrack = async (spec: StreamSpec | undefined, meta: Track
 			console.error(`[HQPlayer] Play failed:`, err);
 			throw err;
 		}
-		// Wait a bit and check HQPlayer status
-		await new Promise((r) => setTimeout(r, 2000));
-		try {
-			const status = await control.getStatus();
-			console.log(`[HQPlayer] Status after play - state: ${status.state}, position: ${status.position}, input_fill: ${status.input_fill}, URI: ${status.metadata?.uri?.substring(0, 80)}...`);
-		} catch (err) {
-			console.error(`[HQPlayer] Status check failed:`, err);
-		}
 		return { ok: true, url };
 	} catch (err) {
 		const message = String((err as Error)?.message ?? err);
