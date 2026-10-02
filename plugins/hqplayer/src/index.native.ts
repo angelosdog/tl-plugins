@@ -1293,7 +1293,7 @@ export const sendCurrentTrack = async (spec: StreamSpec | undefined, meta: Track
 			date: meta?.date,
 			track_id: meta?.track_id ?? spec.trackId,
 			mime: meta?.mime ?? spec.mime ?? "audio/flac",
-			duration: spec.duration,
+			length: String(spec.duration),
 		});
 		await control.stop();
 		await control.playlistClear();
