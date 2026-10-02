@@ -77,11 +77,25 @@ const toTrackMeta = async (item: MediaItem): Promise<TrackMeta> => {
 	const tidalItem = item.tidalItem;
 	trace.log("tidalItem keys:", Object.keys(tidalItem).join(", "));
 	trace.log("album keys:", tidalItem.album ? Object.keys(tidalItem.album).join(", ") : "no album");
-	const coverUrl = (tidalItem as unknown as { coverUrl?: string })?.coverUrl 
-		?? (tidalItem.album as unknown as { coverUrl?: string })?.coverUrl
-		?? (tidalItem.album as unknown as { cover?: string })?.cover
-		?? (tidalItem as unknown as { cover?: string })?.cover
-		?? "";
+	// Try multiple field names for cover
+	let coverUrl = "";
+	const candidates = [
+		(tidalItem as unknown as { coverUrl?: string })?.coverUrl,
+		(tidalItem as unknown as { cover?: string })?.cover,
+		(tidalItem.album as unknown as { coverUrl?: string })?.coverUrl,
+		(tidalItem.album as unknown as { cover?: string })?.cover,
+		(tidalItem.album as unknown as { coverImageUrl?: string })?.coverImageUrl,
+		(tidalItem.album as unknown as { imageUrl?: string })?.imageUrl,
+		(tidalItem as unknown as { album?: { coverUrl?: string } })?.album?.coverUrl,
+		(tidalItem as unknown as { album?: { cover?: string } })?.album?.cover,
+	];
+	for (const c of candidates) {
+		if (c) {
+			coverUrl = c;
+			break;
+		}
+	}
+	trace.log("Cover candidates:", JSON.stringify(candidates));
 	trace.log("Cover URL:", coverUrl);
 	return {
 		song: await item.title().catch(() => tidalItem.title ?? ""),
