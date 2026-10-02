@@ -1284,8 +1284,7 @@ export const sendCurrentTrack = async (spec: StreamSpec | undefined, meta: Track
 				: isLoopbackHost(control.host)
 					? "127.0.0.1"
 					: getLanAddress();
-		// Direct TIDAL URL doesn't work (HQPlayer can't reach CDN or token issues) - use proxy
-		const url = await streamServer.play(spec, host);
+		const url = spec.directUrl ?? (await streamServer.play(spec, host));
 
 		const metaAttrs = formatAttrs({
 			song: meta?.song,

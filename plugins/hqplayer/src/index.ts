@@ -109,21 +109,20 @@ export const sendCurrentTrack = async (item: MediaItem): Promise<boolean> => {
 	}
 	const manifestKeys = playback.manifest ? Object.keys(playback.manifest) : [];
 	trace.log("TIDAL manifest keys:", manifestKeys.join(", "));
-	if (playback.manifest.urls) {
-		trace.log("TIDAL manifest URLs:", JSON.stringify(playback.manifest.urls, null, 2));
-	}
 	if (playback.manifestMimeType !== "application/vnd.tidal.bts") {
 		trace.warn("DASH stream not supported, skipping (spatial audio?).");
 		sendingTrack = false;
 		return false;
 	}
 
+	const directUrl = playback.manifest.urls?.[0];
 	const spec: StreamSpec = {
 		trackId: String(playback.trackId),
 		duration: item.duration ?? 0,
 		mime: playback.manifest.mimeType || "audio/flac",
 		manifestMimeType: "application/vnd.tidal.bts",
 		manifest: playback.manifest,
+		...(directUrl && { directUrl }),
 	};
 
 	const result = await hqp.sendCurrentTrack(spec, await toTrackMeta(item));
