@@ -1307,20 +1307,22 @@ export const sendCurrentTrack = async (spec: StreamSpec | undefined, meta: Track
 		});
 		await control.playlistClear();
 		await control.playlistAdd(url, metaAttrs);
-		try {
-			await control.play();
-			return { ok: true, url };
-		} catch (playErr) {
-			if (useDirectUrl) {
-				console.log(`[HQPlayer.sendCurrentTrack] Direct URL failed, falling back to proxy...`);
+		await control.play();
+		// Wait a moment and verify it's actually playing
+		if (useDirectUrl) {
+			await new Promise((r) => setTimeout(r, 1500));
+			const status = await control.getStatus();
+			console.log(`[HQPlayer.sendCurrentTrack] Status after play: state=${status.state}, position=${status.position}`);
+			if (status.state !== 2) {
+				console.log(`[HQPlayer.sendCurrentTrack] Direct URL not actually playing (state=${status.state}), falling back to proxy...`);
 				const proxyUrl = await streamServer.play(spec, host);
 				await control.playlistClear();
 				await control.playlistAdd(proxyUrl, metaAttrs);
 				await control.play();
 				return { ok: true, url: proxyUrl };
 			}
-			throw playErr;
 		}
+		return { ok: true, url };
 	} catch (err) {
 		const message = String((err as Error)?.message ?? err);
 		console.error(`[HQPlayer.sendCurrentTrack]`, err);

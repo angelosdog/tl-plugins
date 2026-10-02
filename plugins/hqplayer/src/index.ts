@@ -78,7 +78,7 @@ const toTrackMeta = async (item: MediaItem): Promise<TrackMeta> => {
 	trace.log("tidalItem keys:", Object.keys(tidalItem).join(", "));
 	trace.log("album keys:", tidalItem.album ? Object.keys(tidalItem.album).join(", ") : "no album");
 	// Try multiple field names for cover
-	let coverUrl = "";
+	let coverId = "";
 	const candidates = [
 		(tidalItem as unknown as { coverUrl?: string })?.coverUrl,
 		(tidalItem as unknown as { cover?: string })?.cover,
@@ -91,10 +91,14 @@ const toTrackMeta = async (item: MediaItem): Promise<TrackMeta> => {
 	];
 	for (const c of candidates) {
 		if (c) {
-			coverUrl = c;
+			coverId = c;
 			break;
 		}
 	}
+	// Convert TIDAL cover UUID to URL (TIDAL uses UUID, need to format as URL)
+	const coverUrl = coverId 
+		? `https://resources.tidal.com/images/${coverId}/resize/600x600/jpeg`
+		: "";
 	trace.log("Cover candidates:", JSON.stringify(candidates));
 	trace.log("Cover URL:", coverUrl);
 	return {
