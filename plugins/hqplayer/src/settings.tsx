@@ -36,7 +36,7 @@ const stateNames: Record<number, string> = {
 
 export const settings = await ReactiveStore.getPluginStorage<HQPSettings>("hqplayer", {
 	enabled: true,
-	host: "127.0.0.1",
+	host: "192.168.20.12",
 	port: 4321,
 	streamHost: "",
 	quality: "HI_RES_LOSSLESS" satisfies AudioQuality,
@@ -136,10 +136,11 @@ export const Settings = () => {
 				/>
 				<LunaTextSetting
 					title="Stream host (optional)"
-					desc="LAN address Tidal is reachable on. Leave empty to auto-detect"
+					desc="LAN address HQPlayer can reach TIDAL on. Leave empty to auto-detect"
 					value={streamHost}
 					onChange={(e) => setStreamHost(set("streamHost", e.target.value))}
 				/>
+				<LunaSetting title="Control: Native TCP (port 4321)" desc="No UPnP fallback - matches LMS-HQPlayer-Bridge" />
 				<LunaButtonSetting
 					title="Reconnect"
 					desc="Force a reconnect to the control interface"
@@ -158,11 +159,25 @@ export const Settings = () => {
 			</Stack>
 			<LunaSettings title="Discovery" desc="Find HQPlayer instances on the local network">
 				<LunaButtonSetting
-					title="Discover"
-					desc="Send a discovery multicast and list responding HQPlayer instances"
+					title="Discover (native)"
+					desc="Send HQPlayer's custom multicast discovery"
 					onClick={() => void hqp.discoverHQPlayers(4000).then(setHosts)}
 				>
-					Discover
+					Native
+				</LunaButtonSetting>
+				<LunaButtonSetting
+					title="Discover (UPnP)"
+					desc="Send SSDP multicast and list UPnP MediaRenderers"
+					onClick={() => void hqp.discoverHQPlayersUpnp(4000).then(setHosts)}
+				>
+					UPnP
+				</LunaButtonSetting>
+				<LunaButtonSetting
+					title="Discover BubbleUPnP"
+					desc="Send SSDP and list BubbleUPnP/OpenHome renderers"
+					onClick={() => void hqp.discoverBubbleUpnp(4000).then(setHosts)}
+				>
+					BubbleUPnP
 				</LunaButtonSetting>
 				{hosts.length > 0 && (
 					<List dense disablePadding>
@@ -221,7 +236,7 @@ export const Settings = () => {
 				<LunaButtonSetting
 					title="Send current track"
 					desc="Push the currently loaded track to HQPlayer"
-					onClick={() => void sendNow()}
+					onClick={() => { console.log("[HQPlayer] Send now clicked"); void sendNow(); }}
 				>
 					Send now
 				</LunaButtonSetting>

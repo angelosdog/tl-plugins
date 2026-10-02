@@ -87,8 +87,14 @@ const toTrackMeta = async (item: MediaItem): Promise<TrackMeta> => {
 };
 
 export const sendCurrentTrack = async (item: MediaItem): Promise<boolean> => {
-	if (!settings.enabled) return false;
-	if (!(await ensureConnected())) return false;
+	trace.log("sendCurrentTrack called, enabled:", settings.enabled);
+	if (!settings.enabled) {
+		trace.warn("Plugin not enabled, skipping");
+		return false;
+	}
+	const connected = await ensureConnected();
+	trace.log("ensureConnected result:", connected);
+	if (!connected) return false;
 
 	const quality = settings.quality as AudioQuality;
 	const playback = await item.playbackInfo(quality);
@@ -120,8 +126,15 @@ export const sendCurrentTrack = async (item: MediaItem): Promise<boolean> => {
 };
 
 export const sendNow = async (): Promise<void> => {
+	trace.log("sendNow called");
 	const item = await MediaItem.fromPlaybackContext();
-	if (item) await sendCurrentTrack(item);
+	trace.log("MediaItem from context:", item ? "found" : "undefined");
+	if (item) {
+		trace.log("Calling sendCurrentTrack");
+		await sendCurrentTrack(item);
+	} else {
+		trace.log("No item from playback context");
+	}
 };
 
 // Send the new track whenever TIDAL transitions to another track.
