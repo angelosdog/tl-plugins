@@ -1284,7 +1284,9 @@ export const sendCurrentTrack = async (spec: StreamSpec | undefined, meta: Track
 				: isLoopbackHost(control.host)
 					? "127.0.0.1"
 					: getLanAddress();
+		const isDirect = !!spec.directUrl;
 		const url = spec.directUrl ?? (await streamServer.play(spec, host));
+		console.log(`[HQPlayer] URL type: ${isDirect ? "DIRECT" : "PROXY"}, URL: ${url.substring(0, 120)}`);
 
 		const metaAttrs = formatAttrs({
 			song: meta?.song,
