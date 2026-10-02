@@ -74,6 +74,9 @@ ipcRenderer.on(unloads, HQPlayerEventChannel, (_event: unknown, data: HQPlayerEv
 // Best-effort <metadata> child for PlayNextURI (guarded accessors).
 const toTrackMeta = async (item: MediaItem): Promise<TrackMeta> => {
 	const tidalItem = item.tidalItem;
+	const coverUrl = (tidalItem as unknown as { coverUrl?: string })?.coverUrl 
+		?? (tidalItem.album as unknown as { coverUrl?: string })?.coverUrl
+		?? "";
 	return {
 		song: await item.title().catch(() => tidalItem.title ?? ""),
 		artist: tidalItem.artists?.map((a) => a.name).join(", ") ?? "",
@@ -83,6 +86,7 @@ const toTrackMeta = async (item: MediaItem): Promise<TrackMeta> => {
 		date: tidalItem.releaseDate ?? "",
 		track_id: String(item.id),
 		mime: "audio/flac",
+		cover: coverUrl,
 	};
 };
 

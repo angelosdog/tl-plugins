@@ -88,6 +88,8 @@ export type TrackMeta = {
 	date: string;
 	track_id: string;
 	mime: string;
+	cover?: string;
+	album_gain?: string;
 };
 
 export type HQConnectResult = { ok: true; info: HQPInfo } | { ok: false; error: string };
@@ -1294,6 +1296,7 @@ export const sendCurrentTrack = async (spec: StreamSpec | undefined, meta: Track
 			track_id: meta?.track_id ?? spec.trackId,
 			mime: meta?.mime ?? spec.mime ?? "audio/flac",
 			length: String(spec.duration),
+			cover: meta?.cover,
 		});
 		await control.stop();
 		await control.playlistClear();
