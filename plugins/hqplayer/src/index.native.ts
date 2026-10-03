@@ -1309,7 +1309,9 @@ export const sendCurrentTrack = async (spec: StreamSpec | undefined, meta: Track
 		// Direct URL: HQPlayer fetches from TIDAL, minimal wait
 		// Proxy: needs buffer time (4s)
 		await new Promise((r) => setTimeout(r, useDirect ? 1000 : 4000));
+		console.log(`[HQPlayer] About to send Play command...`);
 		await control.play();
+		console.log(`[HQPlayer] Play command sent successfully`);
 
 		// Check status after a few seconds to see what's happening
 		setTimeout(async () => {
