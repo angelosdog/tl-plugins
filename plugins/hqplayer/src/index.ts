@@ -109,6 +109,7 @@ export const sendCurrentTrack = async (item: MediaItem): Promise<boolean> => {
 	}
 	const manifestKeys = playback.manifest ? Object.keys(playback.manifest) : [];
 	trace.log("TIDAL manifest keys:", manifestKeys.join(", "));
+	trace.log("TIDAL urls:", JSON.stringify(playback.manifest.urls));
 	if (playback.manifestMimeType !== "application/vnd.tidal.bts") {
 		trace.warn("DASH stream not supported, skipping (spatial audio?).");
 		sendingTrack = false;
@@ -116,6 +117,7 @@ export const sendCurrentTrack = async (item: MediaItem): Promise<boolean> => {
 	}
 
 	const directUrl = playback.manifest.urls?.[0];
+	trace.log("directUrl from manifest:", directUrl ? "exists" : "undefined");
 	const spec: StreamSpec = {
 		trackId: String(playback.trackId),
 		duration: item.duration ?? 0,
@@ -124,6 +126,7 @@ export const sendCurrentTrack = async (item: MediaItem): Promise<boolean> => {
 		manifest: playback.manifest,
 		...(directUrl && { directUrl }),
 	};
+	trace.log("spec.directUrl:", spec.directUrl ? "exists" : "undefined");
 
 	const result = await hqp.sendCurrentTrack(spec, await toTrackMeta(item));
 	if (!result.ok) {
