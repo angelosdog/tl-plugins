@@ -1300,6 +1300,7 @@ export const sendCurrentTrack = async (spec: StreamSpec | undefined, meta: Track
 			length: String(spec.duration),
 		});
 		try {
+			await control.stop(); // Stop first - same as LMS
 			await control.playlistClear();
 			await control.playlistAdd(url, metaAttrs, 0);
 		} catch (err) {
