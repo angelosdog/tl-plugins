@@ -1310,6 +1310,17 @@ export const sendCurrentTrack = async (spec: StreamSpec | undefined, meta: Track
 		// Proxy: needs buffer time (4s)
 		await new Promise((r) => setTimeout(r, useDirect ? 1000 : 4000));
 		await control.play();
+
+		// Check status after a few seconds to see what's happening
+		setTimeout(async () => {
+			try {
+				const status = await control.getStatus();
+				console.log(`[HQPlayer] Status check: state=${status.state}, track=${status.track}, input_fill=${status.input_fill}, uri=${status.metadata?.uri?.substring(0, 60)}...`);
+			} catch (e) {
+				console.log(`[HQPlayer] Status check failed:`, e);
+			}
+		}, 5000);
+
 		return { ok: true, url };
 	} catch (err) {
 		const message = String((err as Error)?.message ?? err);
