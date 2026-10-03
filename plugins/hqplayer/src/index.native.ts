@@ -1277,7 +1277,7 @@ export const getHQVolumeRange = async (): Promise<HQOk<{ min: number; max: numbe
 export const sendCurrentTrack = async (spec: StreamSpec | undefined, meta: TrackMeta | undefined): Promise<HQStreamResult> => {
 	if (spec === undefined) return { ok: false, error: "No stream spec provided" };
 	streamServer.clearStream();
-	const useDirect = spec.directUrl ? true : false; // Use direct URL if available
+	const useDirect = false; // Force proxy to compare
 	try {
 		const host =
 			streamHostOverride !== undefined
