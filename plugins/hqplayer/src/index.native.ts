@@ -1277,6 +1277,7 @@ export const getHQVolumeRange = async (): Promise<HQOk<{ min: number; max: numbe
 export const sendCurrentTrack = async (spec: StreamSpec | undefined, meta: TrackMeta | undefined): Promise<HQStreamResult> => {
 	if (spec === undefined) return { ok: false, error: "No stream spec provided" };
 	streamServer.clearStream();
+	const isDirect = true; // Try direct URL with TIDAL token
 	try {
 		const host =
 			streamHostOverride !== undefined
@@ -1284,8 +1285,8 @@ export const sendCurrentTrack = async (spec: StreamSpec | undefined, meta: Track
 				: isLoopbackHost(control.host)
 					? "127.0.0.1"
 					: getLanAddress();
-		const isDirect = false; // DIRECT fails due to token expiry - always use PROXY
-		const url = await streamServer.play(spec, host);
+		const useDirect = isDirect && !!spec.directUrl;
+		const url = useDirect ? spec.directUrl! : await streamServer.play(spec, host);
 
 		const metaAttrs = formatAttrs({
 			song: meta?.song,
@@ -1305,7 +1306,9 @@ export const sendCurrentTrack = async (spec: StreamSpec | undefined, meta: Track
 			console.error(`[HQPlayer] PlaylistAdd failed:`, err);
 			throw err;
 		}
-		await new Promise((r) => setTimeout(r, 4000));
+		// Direct URL: HQPlayer fetches from TIDAL, minimal wait
+		// Proxy: needs buffer time (4s)
+		await new Promise((r) => setTimeout(r, useDirect ? 1000 : 4000));
 		await control.play();
 		return { ok: true, url };
 	} catch (err) {
