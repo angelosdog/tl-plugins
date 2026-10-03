@@ -1277,7 +1277,7 @@ export const getHQVolumeRange = async (): Promise<HQOk<{ min: number; max: numbe
 export const sendCurrentTrack = async (spec: StreamSpec | undefined, meta: TrackMeta | undefined): Promise<HQStreamResult> => {
 	if (spec === undefined) return { ok: false, error: "No stream spec provided" };
 	streamServer.clearStream();
-	const isDirect = true; // Try direct URL with TIDAL token
+	const useDirect = spec.directUrl ? true : false; // Use direct URL if available
 	try {
 		const host =
 			streamHostOverride !== undefined
@@ -1285,8 +1285,8 @@ export const sendCurrentTrack = async (spec: StreamSpec | undefined, meta: Track
 				: isLoopbackHost(control.host)
 					? "127.0.0.1"
 					: getLanAddress();
-		const useDirect = isDirect && !!spec.directUrl;
 		const url = useDirect ? spec.directUrl! : await streamServer.play(spec, host);
+		console.log(`[HQPlayer] Mode: ${useDirect ? "DIRECT" : "PROXY"}, URL: ${url.substring(0, 100)}...`);
 
 		const metaAttrs = formatAttrs({
 			song: meta?.song,
