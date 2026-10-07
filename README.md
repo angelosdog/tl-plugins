@@ -7,7 +7,7 @@ Built and auto-released to the TidaLuna Plugin Store on every push to `main`.
 ## Features
 
 - Streams TIDAL HiFi/FLAC audio to HQPlayer
-- UPnP AVTransport control (play/stop)
+- UPnP AVTransport control (play/pause/stop)
 - Full buffering for reliable playback
 - OLD_AES decryption for encrypted TIDAL streams
 - Quality selection (HI_RES_LOSSLESS, LOSSLESS, HIGH, LOW)
@@ -51,13 +51,12 @@ Then open TidaLuna → Plugin Store tab → install the `[Dev]` plugin.
 3. Encrypted streams (OLD_AES) are decrypted
 4. Track URL and metadata sent to HQPlayer via UPnP AVTransport
 5. HQPlayer fetches audio from plugin's HTTP server
-6. Transport state (play/stop) mirrored from TIDAL to HQPlayer
+6. Transport state (play/pause/stop) mirrored from TIDAL to HQPlayer
 
 ## Limitations
 
 - **No seek support**: Seeking within tracks is not implemented. Issues with tracking what a seek means in Tidal
 - **UPnP only**: Attempted direct streaming and OpenHome renderers but couldn't solve stuttering
-- **No pause and resume**: TODO
 - **Gapless playback**: TODO
 
 ## Troubleshooting
