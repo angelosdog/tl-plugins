@@ -1,7 +1,7 @@
 import { fetchMediaItemStream } from "@luna/lib.native";
 import { createCipheriv, createDecipheriv, randomUUID } from "crypto";
 import { tmpdir } from "os";
-import { createWriteStream, createReadStream, unlink, stat } from "fs";
+import { createWriteStream, createReadStream, unlink, stat, readdir } from "fs";
 import { join } from "path";
 import http, {
   createServer,
@@ -12,6 +12,26 @@ import http, {
 import https from "https";
 import { networkInterfaces } from "os";
 import { Transform, PassThrough, type Readable } from "stream";
+
+// Clean up any orphaned temp files from previous sessions
+const cleanupOrphanedTempFiles = (): void => {
+  const tempDir = tmpdir();
+  readdir(tempDir, (err, files) => {
+    if (err) return;
+    
+    const hqPlayerFiles = files.filter(f => f.startsWith("hqplayer-") && f.endsWith(".flac"));
+    
+    hqPlayerFiles.forEach(file => {
+      const filePath = join(tempDir, file);
+      unlink(filePath, () => {
+        // Silent cleanup - errors are ignored
+      });
+    });
+  });
+};
+
+// Run cleanup on module initialization
+cleanupOrphanedTempFiles();
 
 // #region OLD_AES Decryption (Tidal FLAC encryption)
 // Master key for unwrapping per-track keys (publicly known)
