@@ -166,14 +166,14 @@ PlayState.onState(unloads, (state) => {
   if (!settings.enabled) return;
   // Skip if we're currently sending a track (we handle play ourselves)
   if (sendingTrack) return;
-  trace.log(`PlayState changed to: ${state}`);
   switch (state) {
     case "PLAYING": {
       void hqp.playHQPlayer();
       break;
     }
-    case "PAUSED": {
-      if (!settings.muteTidal) void hqp.pauseHQPlayer();
+    case "PAUSED":
+    case "NOT_PLAYING": {
+      void hqp.pauseHQPlayer();
       break;
     }
     case "STALLED": {
